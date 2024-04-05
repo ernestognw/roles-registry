@@ -1,66 +1,41 @@
-## Foundry
+## Access Control Roles Registry
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+Attempt to make a registry for on-chain registration of roles.
 
-Foundry consists of:
+## Problem
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+One of the most widely used patterns in smart contracts is the role-based access control pattern. However, there is no standard way of identifying roles. Concretely, [OpenZeppelin's official recommendation.](https://docs.openzeppelin.com/contracts/5.x/api/access#AccessControl) suggests to hash a string literal, which disallows for indexers to get the preimage in a constant way.
 
-## Documentation
+Recent implementations such as the OpenZeppelin Access Manager use bytes64 roles that can be [labeled through a function](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v5.0.1/contracts/access/manager/AccessManager.sol#L217) that emits an event for off-chain indexers to pick it up, but there's still no interoperability for roles between smart contracts.
 
-https://book.getfoundry.sh/
+## Solution
+
+This repository introduces a Bytes32Roles Registry that stores labels for roles if such label matches the hash representing the role.
 
 ## Usage
 
-### Build
+### Register a role
 
-```shell
-$ forge build
+```solidity
+// Hashed bytes32 string literals (<= 32 bytes)
+// bytes32 constant ROLE = keccak256("FOO");
+function registerStandardBytes32(bytes32 role, string calldata label) external;
+
+// Hashed strings (> 32 bytes)
+// bytes32 constant ROLE = keccak256("this is a long string that doesn't fit in 32 bytes");
+function registerStandardStringLiteral(bytes32 role, string calldata label) external;
 ```
 
-### Test
+### Get a role
 
-```shell
-$ forge test
+```solidity
+function standardBytes32(bytes32 role) external view returns (bytes32);
+function standardStringLiteral(bytes32 role) external view returns (string memory);
 ```
 
-### Format
+### Events
 
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+```solidity
+event StandardLabelBytes32(bytes32 indexed key, bytes32 value);
+event StandardLabelStringLiteral(bytes32 indexed key, string value);
 ```

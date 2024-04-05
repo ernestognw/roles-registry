@@ -4,3 +4,9 @@ out = "out"
 libs = ["lib"]
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+
+[etherscan]
+  sepolia = { key = "${API_KEY_ETHERSCAN}" }
+
+[rpc_endpoints]
+  sepolia = "https://sepolia.infura.io/v3/${API_KEY_INFURA}"
